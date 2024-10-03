@@ -1,0 +1,4 @@
+repository "Platform-Builder@boraytuna@cloud"
+  path "/"
+    br "/main"
+    co "/main"

@@ -3,9 +3,10 @@ using UnityEngine;
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;  // Singleton for easy access
-
-    public GameObject playerPrefab;
-    public Transform spawnPoint;
+    
+    [Header("Player Spawn References")]
+    [SerializeField] private GameObject playerPrefab;
+    [SerializeField] private Transform spawnPoint;
 
     private void Awake()
     {

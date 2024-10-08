@@ -48,18 +48,18 @@ namespace Controllers
                     ""initialStateCheck"": false
                 },
                 {
-                    ""name"": ""BuildPlatform"",
+                    ""name"": ""FallFast"",
                     ""type"": ""Button"",
-                    ""id"": ""9631481e-5c39-4dad-8bfc-28309e5d42fd"",
+                    ""id"": ""57689c6b-2534-4eff-8b42-e1053f63ccb3"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
                 },
                 {
-                    ""name"": ""Interact"",
+                    ""name"": ""BuildPlatform"",
                     ""type"": ""Button"",
-                    ""id"": ""42f95228-d6f8-4b41-830a-085719bdec42"",
+                    ""id"": ""9631481e-5c39-4dad-8bfc-28309e5d42fd"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
                     ""interactions"": """",
@@ -73,6 +73,15 @@ namespace Controllers
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Interact"",
+                    ""type"": ""Button"",
+                    ""id"": ""42f95228-d6f8-4b41-830a-085719bdec42"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -80,6 +89,17 @@ namespace Controllers
                     ""name"": """",
                     ""id"": ""fd57d592-8528-4653-aea3-ebb7e8966ddf"",
                     ""path"": ""<Keyboard>/space"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Jump"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""9eb811e2-d8b3-4479-b284-a518ddc5b5fc"",
+                    ""path"": ""<Keyboard>/w"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
@@ -110,17 +130,6 @@ namespace Controllers
                     ""isPartOfComposite"": false
                 },
                 {
-                    ""name"": """",
-                    ""id"": ""4fc64a68-5fdb-454e-ac73-3643d8b2e580"",
-                    ""path"": ""<Keyboard>/q"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""UseTool"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
                     ""name"": ""2D Vector"",
                     ""id"": ""20276adb-c70c-4e0e-a33a-33bb5a0082ab"",
                     ""path"": ""2DVector"",
@@ -130,28 +139,6 @@ namespace Controllers
                     ""action"": ""Move"",
                     ""isComposite"": true,
                     ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": ""up"",
-                    ""id"": ""e50fe9fa-40ef-43eb-9870-9b1f86b82475"",
-                    ""path"": ""<Keyboard>/w"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""Move"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": true
-                },
-                {
-                    ""name"": ""down"",
-                    ""id"": ""70ca4909-51f2-40b8-bc59-a23560f84bf2"",
-                    ""path"": ""<Keyboard>/s"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""Move"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": true
                 },
                 {
                     ""name"": ""left"",
@@ -174,6 +161,28 @@ namespace Controllers
                     ""action"": ""Move"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""4fc64a68-5fdb-454e-ac73-3643d8b2e580"",
+                    ""path"": ""<Keyboard>/q"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""UseTool"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""189ed704-42c6-4125-9333-85cfd781d0b8"",
+                    ""path"": ""<Keyboard>/s"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""FallFast"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -184,9 +193,10 @@ namespace Controllers
             m_Player = asset.FindActionMap("Player", throwIfNotFound: true);
             m_Player_Move = m_Player.FindAction("Move", throwIfNotFound: true);
             m_Player_Jump = m_Player.FindAction("Jump", throwIfNotFound: true);
+            m_Player_FallFast = m_Player.FindAction("FallFast", throwIfNotFound: true);
             m_Player_BuildPlatform = m_Player.FindAction("BuildPlatform", throwIfNotFound: true);
-            m_Player_Interact = m_Player.FindAction("Interact", throwIfNotFound: true);
             m_Player_UseTool = m_Player.FindAction("UseTool", throwIfNotFound: true);
+            m_Player_Interact = m_Player.FindAction("Interact", throwIfNotFound: true);
         }
 
         public void Dispose()
@@ -250,18 +260,20 @@ namespace Controllers
         private List<IPlayerActions> m_PlayerActionsCallbackInterfaces = new List<IPlayerActions>();
         private readonly InputAction m_Player_Move;
         private readonly InputAction m_Player_Jump;
+        private readonly InputAction m_Player_FallFast;
         private readonly InputAction m_Player_BuildPlatform;
-        private readonly InputAction m_Player_Interact;
         private readonly InputAction m_Player_UseTool;
+        private readonly InputAction m_Player_Interact;
         public struct PlayerActions
         {
             private @GameInputAction m_Wrapper;
             public PlayerActions(@GameInputAction wrapper) { m_Wrapper = wrapper; }
             public InputAction @Move => m_Wrapper.m_Player_Move;
             public InputAction @Jump => m_Wrapper.m_Player_Jump;
+            public InputAction @FallFast => m_Wrapper.m_Player_FallFast;
             public InputAction @BuildPlatform => m_Wrapper.m_Player_BuildPlatform;
-            public InputAction @Interact => m_Wrapper.m_Player_Interact;
             public InputAction @UseTool => m_Wrapper.m_Player_UseTool;
+            public InputAction @Interact => m_Wrapper.m_Player_Interact;
             public InputActionMap Get() { return m_Wrapper.m_Player; }
             public void Enable() { Get().Enable(); }
             public void Disable() { Get().Disable(); }
@@ -277,15 +289,18 @@ namespace Controllers
                 @Jump.started += instance.OnJump;
                 @Jump.performed += instance.OnJump;
                 @Jump.canceled += instance.OnJump;
+                @FallFast.started += instance.OnFallFast;
+                @FallFast.performed += instance.OnFallFast;
+                @FallFast.canceled += instance.OnFallFast;
                 @BuildPlatform.started += instance.OnBuildPlatform;
                 @BuildPlatform.performed += instance.OnBuildPlatform;
                 @BuildPlatform.canceled += instance.OnBuildPlatform;
-                @Interact.started += instance.OnInteract;
-                @Interact.performed += instance.OnInteract;
-                @Interact.canceled += instance.OnInteract;
                 @UseTool.started += instance.OnUseTool;
                 @UseTool.performed += instance.OnUseTool;
                 @UseTool.canceled += instance.OnUseTool;
+                @Interact.started += instance.OnInteract;
+                @Interact.performed += instance.OnInteract;
+                @Interact.canceled += instance.OnInteract;
             }
 
             private void UnregisterCallbacks(IPlayerActions instance)
@@ -296,15 +311,18 @@ namespace Controllers
                 @Jump.started -= instance.OnJump;
                 @Jump.performed -= instance.OnJump;
                 @Jump.canceled -= instance.OnJump;
+                @FallFast.started -= instance.OnFallFast;
+                @FallFast.performed -= instance.OnFallFast;
+                @FallFast.canceled -= instance.OnFallFast;
                 @BuildPlatform.started -= instance.OnBuildPlatform;
                 @BuildPlatform.performed -= instance.OnBuildPlatform;
                 @BuildPlatform.canceled -= instance.OnBuildPlatform;
-                @Interact.started -= instance.OnInteract;
-                @Interact.performed -= instance.OnInteract;
-                @Interact.canceled -= instance.OnInteract;
                 @UseTool.started -= instance.OnUseTool;
                 @UseTool.performed -= instance.OnUseTool;
                 @UseTool.canceled -= instance.OnUseTool;
+                @Interact.started -= instance.OnInteract;
+                @Interact.performed -= instance.OnInteract;
+                @Interact.canceled -= instance.OnInteract;
             }
 
             public void RemoveCallbacks(IPlayerActions instance)
@@ -326,9 +344,10 @@ namespace Controllers
         {
             void OnMove(InputAction.CallbackContext context);
             void OnJump(InputAction.CallbackContext context);
+            void OnFallFast(InputAction.CallbackContext context);
             void OnBuildPlatform(InputAction.CallbackContext context);
-            void OnInteract(InputAction.CallbackContext context);
             void OnUseTool(InputAction.CallbackContext context);
+            void OnInteract(InputAction.CallbackContext context);
         }
     }
 }

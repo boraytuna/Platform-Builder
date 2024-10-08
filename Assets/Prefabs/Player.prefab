@@ -163,14 +163,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 10
-  jumpForce: 10
+  jumpForce: 12
   fallFastVelocity: 5
   groundLayer:
     serializedVersion: 2
     m_Bits: 64
   groundCheck: {fileID: 5669126305119361747}
   groundCheckRadius: 0.2
-  canDoubleJump: 0
+  camera: {fileID: 0}
 --- !u!1 &5932816768710795836
 GameObject:
   m_ObjectHideFlags: 0
@@ -196,7 +196,7 @@ Transform:
   m_GameObject: {fileID: 5932816768710795836}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: -1.009, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 5.5078, y: 5.5078, z: 5.5078}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 4505390627107998414}

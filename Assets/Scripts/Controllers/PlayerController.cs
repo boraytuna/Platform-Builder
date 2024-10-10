@@ -1,3 +1,16 @@
+//----------------------------------------------------------
+// This script is responsible for player movement.
+// Use A or D to move horizontally,
+// Use space to jump,
+// Use S to fall faster while in the air,
+// Use W or S to climb up or down on a wall,
+// Double tap on A or D to dash on that direction,
+//
+// For prototyping use 1,2,3 to unlock the abilities.
+//
+// Author: Boray Tuna Goren
+// Date: 10/10/2024
+//---------------------------------------------------------
 using UnityEngine;
 using System.Collections;
 using Abilities;
@@ -50,8 +63,8 @@ namespace Controllers
 
         // Wall jump variables
         [Header("Wall Jump Variables")]
-        [SerializeField] private float wallJumpHorizontalForce = 10f;
-        [SerializeField] private float wallJumpVerticalForce = 12f;
+        [SerializeField] private float wallJumpHorizontalForce = 12f;
+        [SerializeField] private float wallJumpVerticalForce = 16f;
 
         // Ground detection variables
         [Header("Ground Detection")]
@@ -320,6 +333,7 @@ namespace Controllers
             else if (_isWallSliding && _abilities.IsAbilityUnlocked<WallClimbAbility>())
             {
                 WallJump();
+                _canDoubleJump = true;
                 Debug.Log("Performed wall jump.");
             }
             else if (_canDoubleJump)
@@ -403,7 +417,7 @@ namespace Controllers
             RaycastHit2D hit = Physics2D.Raycast(rayOrigin, rayDirection, wallCheckDistance, wallLayer);
 
             Debug.DrawRay(rayOrigin, rayDirection * wallCheckDistance, Color.red);
-
+            
             if (hit.collider != null)
             {
                 if (!_isTouchingWall)
@@ -466,7 +480,7 @@ namespace Controllers
                 {
                     Debug.Log($"Wall Slide - Climb Input: {_climbInput}");
 
-                    float verticalVelocity = 0f;
+                    float verticalVelocity;
 
                     if (_climbInput > 0f)
                     {

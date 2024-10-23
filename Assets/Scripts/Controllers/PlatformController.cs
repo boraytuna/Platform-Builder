@@ -8,12 +8,12 @@ namespace Controllers
         [SerializeField] private Camera mainCamera;
         private void OnEnable()
         {
-            InputController.OnBuildPlatform += PlacePlatform;
+            GamePlayEvents.Instance.OnBuildPlatform += PlacePlatform;
         }
 
         private void OnDisable()
         {
-            InputController.OnBuildPlatform -= PlacePlatform;
+           GamePlayEvents.Instance.OnBuildPlatform -= PlacePlatform;
         }
 
         private void PlacePlatform()

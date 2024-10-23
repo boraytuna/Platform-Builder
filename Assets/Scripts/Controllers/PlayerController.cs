@@ -14,6 +14,7 @@
 using UnityEngine;
 using System.Collections;
 using Abilities;
+using Walls;
 
 namespace Controllers
 {
@@ -54,17 +55,9 @@ namespace Controllers
 
         // Wall slide variables
         [Header("Wall Slide Variables")]
-        [SerializeField] private float wallStickTime = 0.4f; // Time to stick to the wall
-        [SerializeField] private float wallSlideSpeed = 10f; // Speed to slide down the wall
-        [SerializeField] private float wallFastSlideSpeed = 16f; // Speed when sliding down faster
-        [SerializeField] private float wallClimbSpeed = 14f; // Speed when climbing up
         private float _wallContactTime;
         private bool _isWallSliding;
-
-        // Wall jump variables
-        [Header("Wall Jump Variables")]
-        [SerializeField] private float wallJumpHorizontalForce = 12f;
-        [SerializeField] private float wallJumpVerticalForce = 16f;
+        private WallProperties _wallProperties;
 
         // Ground detection variables
         [Header("Ground Detection")]
@@ -86,17 +79,22 @@ namespace Controllers
 
         private void OnEnable()
         {
-            InputController.OnMove += HandleMove;
-            InputController.OnJump += HandleJump;
-            InputController.OnClimb += HandleClimb;
+            // Subscribe to events from GamePlayEvents
+            GamePlayEvents.Instance.OnMove += HandleMove;
+            GamePlayEvents.Instance.OnJump += HandleJump;
+            GamePlayEvents.Instance.OnClimb += HandleClimb;
         }
 
         private void OnDisable()
         {
-            InputController.OnMove -= HandleMove;
-            InputController.OnJump -= HandleJump;
-            InputController.OnClimb -= HandleClimb;
-        }
+            // Unsubscribe from events when the player object is disabled
+            if (GamePlayEvents.Instance != null)
+            {
+                GamePlayEvents.Instance.OnMove -= HandleMove;
+                GamePlayEvents.Instance.OnJump -= HandleJump;
+                GamePlayEvents.Instance.OnClimb -= HandleClimb;
+            }
+        } 
 
         private void Start()
         {
@@ -232,7 +230,7 @@ namespace Controllers
         private void HandleClimb(float value)
         {
             _climbInput = value;
-            Debug.Log($"Climb Input: {_climbInput}");
+            //Debug.Log($"Climb Input: {_climbInput}");
         }
 
         // Detect double-tap for dash
@@ -332,7 +330,6 @@ namespace Controllers
             }
             else if (_isWallSliding && _abilities.IsAbilityUnlocked<WallClimbAbility>())
             {
-                WallJump();
                 _canDoubleJump = true;
                 Debug.Log("Performed wall jump.");
             }
@@ -355,22 +352,7 @@ namespace Controllers
         {
             _rb2D.velocity = new Vector2(_rb2D.velocity.x, jumpForce);
         }
-
-        // Wall jump method
-        private void WallJump()
-        {
-            float jumpDirection = -transform.localScale.x;
-            Vector2 wallJumpForce = new Vector2(jumpDirection * wallJumpHorizontalForce, wallJumpVerticalForce);
-            _rb2D.velocity = Vector2.zero;
-            _rb2D.AddForce(wallJumpForce, ForceMode2D.Impulse);
-
-            transform.localScale = new Vector3(-transform.localScale.x, transform.localScale.y, transform.localScale.z);
-
-            _isWallSliding = false;
-            _isTouchingWall = false;
-            _rb2D.gravityScale = 1;
-        }
-
+        
         // Handle fast fall
         private void HandleFallFast()
         {
@@ -417,7 +399,7 @@ namespace Controllers
             RaycastHit2D hit = Physics2D.Raycast(rayOrigin, rayDirection, wallCheckDistance, wallLayer);
 
             Debug.DrawRay(rayOrigin, rayDirection * wallCheckDistance, Color.red);
-            
+    
             if (hit.collider != null)
             {
                 if (!_isTouchingWall)
@@ -428,6 +410,14 @@ namespace Controllers
                 }
                 _isTouchingWall = true;
                 _currentWall = hit.collider.gameObject;
+
+                // Get the WallProperties component from the wall the player touched
+                _wallProperties = _currentWall.GetComponent<WallProperties>();
+
+                if (_wallProperties == null)
+                {
+                    Debug.LogError("No WallProperties component found on the wall.");
+                }
 
                 // Reset double jump when touching the wall, only if wall climbing ability is unlocked
                 if (_abilities.IsAbilityUnlocked<WallClimbAbility>() && _abilities.IsAbilityUnlocked<DoubleJumpAbility>())
@@ -445,10 +435,11 @@ namespace Controllers
                 _isTouchingWall = false;
                 _currentWall = null;
                 _isWallSliding = false;
+                _wallProperties = null;  // Reset wall properties when no longer touching a wall
             }
         }
-
-        // Handle wall sliding
+        
+        // Handle wall sliding and climbing
         private void HandleWallSlide()
         {
             if (!_isWallSliding)
@@ -458,19 +449,19 @@ namespace Controllers
                 Debug.Log("Started wall sliding.");
             }
 
-            _rb2D.gravityScale = 0; // Disable gravity during wall sliding
+            _rb2D.gravityScale = 0; // Disable gravity during wall sliding/climbing
 
             if (!_abilities.IsAbilityUnlocked<WallClimbAbility>())
             {
                 // Without wall climbing ability, player slides down at a fixed speed
-                _rb2D.velocity = new Vector2(_rb2D.velocity.x, -wallSlideSpeed);
+                _rb2D.velocity = new Vector2(_rb2D.velocity.x, -_wallProperties.WallSlideSpeed);
                 Debug.Log("Sliding down wall (no wall climbing ability).");
             }
             else
             {
                 float timeSinceWallContact = Time.time - _wallContactTime;
 
-                if (timeSinceWallContact < wallStickTime)
+                if (timeSinceWallContact < _wallProperties.WallStickTime)
                 {
                     // Stick to the wall for wallStickTime seconds
                     _rb2D.velocity = new Vector2(_rb2D.velocity.x, 0);
@@ -484,20 +475,20 @@ namespace Controllers
 
                     if (_climbInput > 0f)
                     {
-                        // Climb up
-                        verticalVelocity = wallClimbSpeed;
+                        // Climb up the wall, with a cap on the speed
+                        verticalVelocity = Mathf.Min(_wallProperties.WallClimbSpeed, _wallProperties.WallFlySpeedLimit); // Cap the climb speed to prevent "flying"
                         Debug.Log("Climbing up the wall.");
                     }
                     else if (_climbInput < 0f)
                     {
                         // Slide down faster
-                        verticalVelocity = -wallFastSlideSpeed;
+                        verticalVelocity = -_wallProperties.WallFastSlideSpeed;
                         Debug.Log("Sliding down faster.");
                     }
                     else
                     {
                         // Regular wall sliding down
-                        verticalVelocity = -wallSlideSpeed;
+                        verticalVelocity = -_wallProperties.WallSlideSpeed;
                         Debug.Log("Sliding down.");
                     }
 
@@ -507,3 +498,4 @@ namespace Controllers
         }
     }
 }
+

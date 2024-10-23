@@ -196,7 +196,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   moveSpeed: 10
   jumpForce: 12
-  fallFastMultiplier: 5
+  fallFastMultiplier: 10
   dashSpeed: 4
   dashDuration: 0.2
   dashCooldown: 4
@@ -205,12 +205,8 @@ MonoBehaviour:
     m_Bits: 128
   wallCheck: {fileID: 3057235154002726967}
   wallCheckDistance: 1
-  wallStickTime: 0.4
-  wallSlideSpeed: 10
-  wallFastSlideSpeed: 16
-  wallClimbSpeed: 14
-  wallJumpHorizontalForce: 12
-  wallJumpVerticalForce: 16
+  wallJumpHorizontalForce: 16
+  wallJumpVerticalForce: 20
   groundLayer:
     serializedVersion: 2
     m_Bits: 192

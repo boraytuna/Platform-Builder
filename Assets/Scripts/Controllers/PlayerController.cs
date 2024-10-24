@@ -12,8 +12,10 @@
 // Date: 10/10/2024
 //---------------------------------------------------------
 using UnityEngine;
+using System;
 using System.Collections;
 using Abilities;
+using Managers;
 using Walls;
 
 namespace Controllers
@@ -80,19 +82,21 @@ namespace Controllers
         private void OnEnable()
         {
             // Subscribe to events from GamePlayEvents
-            GamePlayEvents.Instance.OnMove += HandleMove;
-            GamePlayEvents.Instance.OnJump += HandleJump;
-            GamePlayEvents.Instance.OnClimb += HandleClimb;
+            GamePlayEvents.instance.OnMove += HandleMove;
+            GamePlayEvents.instance.OnJump += HandleJump;
+            GamePlayEvents.instance.OnClimb += HandleClimb;
+            GamePlayEvents.instance.OnAbilityUnlocked += HandleAbilityUnlocked;
         }
 
         private void OnDisable()
         {
             // Unsubscribe from events when the player object is disabled
-            if (GamePlayEvents.Instance != null)
+            if (GamePlayEvents.instance != null)
             {
-                GamePlayEvents.Instance.OnMove -= HandleMove;
-                GamePlayEvents.Instance.OnJump -= HandleJump;
-                GamePlayEvents.Instance.OnClimb -= HandleClimb;
+                GamePlayEvents.instance.OnMove -= HandleMove;
+                GamePlayEvents.instance.OnJump -= HandleJump;
+                GamePlayEvents.instance.OnClimb -= HandleClimb;
+                GamePlayEvents.instance.OnAbilityUnlocked -= HandleAbilityUnlocked;
             }
         } 
 
@@ -128,28 +132,11 @@ namespace Controllers
             {
                 Debug.LogError("SpriteRenderer component is missing from the player GameObject.");
             }
-
+            
             // Initialize abilities
             _abilities.AddAbility(new DoubleJumpAbility());
             _abilities.AddAbility(new DashAbility(dashSpeed, dashDuration));
             _abilities.AddAbility(new WallClimbAbility());
-        }
-
-        private void Update()
-        {
-            // Handle test unlocking of abilities (for prototype/testing)
-            if (Input.GetKeyDown(KeyCode.Alpha1))
-            {
-                _abilities.UnlockAbility<DoubleJumpAbility>();
-            }
-            if (Input.GetKeyDown(KeyCode.Alpha2))
-            {
-                _abilities.UnlockAbility<DashAbility>();
-            }
-            if (Input.GetKeyDown(KeyCode.Alpha3))
-            {
-                _abilities.UnlockAbility<WallClimbAbility>();
-            }
         }
 
         private void FixedUpdate()
@@ -206,6 +193,22 @@ namespace Controllers
 
             // Wrap the player's horizontal position
             WrapAround();
+        }
+        
+        private void HandleAbilityUnlocked(Type abilityType)
+        {
+            _abilities.UnlockAbility(abilityType);
+
+            if (abilityType == typeof(DoubleJumpAbility))
+            {
+                _canDoubleJump = true;
+                Debug.Log("Double Jump Ability unlocked. Double jump is now available.");
+            }
+        }
+        
+        public Abilities.Abilities GetAbilities()
+        {
+            return _abilities;
         }
 
         // Handle movement input

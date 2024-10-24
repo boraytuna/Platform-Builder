@@ -1,17 +1,15 @@
 namespace Abilities
 {
+    [System.Serializable]
     public abstract class Ability : IAbility
     {
-        public bool IsUnlocked { get; private set; }
+        public bool isUnlocked { get; private set; }
 
         public void Unlock()
         {
-            IsUnlocked = true;
+            isUnlocked = true;
             OnUnlock();
         }
-
-        public virtual void Activate() { }
-        public virtual void Deactivate() { }
 
         protected virtual void OnUnlock() { }
     }

@@ -20,7 +20,7 @@ namespace Managers
                 GameObject playerInstance = Instantiate(playerPrefab, spawnPoint.position, Quaternion.identity);
 
                 // Trigger the event to notify that the player has been spawned
-                GamePlayEvents.Instance.PlayerSpawned(playerInstance.transform);
+                GamePlayEvents.instance.PlayerSpawned(playerInstance.transform);
             }
             else
             {

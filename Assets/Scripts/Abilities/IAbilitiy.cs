@@ -2,9 +2,7 @@ namespace Abilities
 {
     public interface IAbility
     {
-        bool IsUnlocked { get; }
+        bool isUnlocked { get; }
         void Unlock();
-        void Activate();
-        void Deactivate();
     }
 }

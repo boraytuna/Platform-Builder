@@ -1,3 +1,4 @@
+using Managers;
 using UnityEngine;
 
 namespace Controllers
@@ -8,12 +9,12 @@ namespace Controllers
         [SerializeField] private Camera mainCamera;
         private void OnEnable()
         {
-            GamePlayEvents.Instance.OnBuildPlatform += PlacePlatform;
+            GamePlayEvents.instance.OnBuildPlatform += PlacePlatform;
         }
 
         private void OnDisable()
         {
-           GamePlayEvents.Instance.OnBuildPlatform -= PlacePlatform;
+           GamePlayEvents.instance.OnBuildPlatform -= PlacePlatform;
         }
 
         private void PlacePlatform()

@@ -24,9 +24,18 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "BuildPlatform",
+                    "name": "Climb",
+                    "type": "Value",
+                    "id": "28af5433-997f-430a-ae88-f93fe3132c27",
+                    "expectedControlType": "Axis",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                },
+                {
+                    "name": "SwitchTool",
                     "type": "Button",
-                    "id": "9631481e-5c39-4dad-8bfc-28309e5d42fd",
+                    "id": "d18d1bf2-bb63-432b-8b84-a2acfda807e3",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
@@ -35,7 +44,7 @@
                 {
                     "name": "UseTool",
                     "type": "Button",
-                    "id": "d18d1bf2-bb63-432b-8b84-a2acfda807e3",
+                    "id": "9631481e-5c39-4dad-8bfc-28309e5d42fd",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
@@ -51,13 +60,13 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "Climb",
-                    "type": "Value",
-                    "id": "28af5433-997f-430a-ae88-f93fe3132c27",
-                    "expectedControlType": "Axis",
+                    "name": "SwitchPlatform",
+                    "type": "Button",
+                    "id": "c9803a2f-bc1e-45eb-b00f-30fc2e51d20f",
+                    "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
-                    "initialStateCheck": true
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -69,17 +78,6 @@
                     "processors": "",
                     "groups": "",
                     "action": "Jump",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "7a0f0703-eae6-48ad-8a2b-7eac99b5305d",
-                    "path": "<Mouse>/leftButton",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "BuildPlatform",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -134,6 +132,17 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
+                    "action": "SwitchTool",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "7a0f0703-eae6-48ad-8a2b-7eac99b5305d",
+                    "path": "<Mouse>/leftButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
                     "action": "UseTool",
                     "isComposite": false,
                     "isPartOfComposite": false
@@ -170,6 +179,61 @@
                     "action": "Climb",
                     "isComposite": false,
                     "isPartOfComposite": true
+                },
+                {
+                    "name": "",
+                    "id": "0eac6e02-8ebe-495f-8907-3cbcb922b969",
+                    "path": "<Keyboard>/1",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "SwitchPlatform",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "7573fb19-e8f2-4114-b854-42bc008cabb0",
+                    "path": "<Keyboard>/2",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "SwitchPlatform",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "a4a686cf-5a38-4443-8e2f-44fe1d822edb",
+                    "path": "<Keyboard>/3",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "SwitchPlatform",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "e72d5e10-bdbf-46ea-82c6-c9a33b76877a",
+                    "path": "<Keyboard>/4",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "SwitchPlatform",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "f0972806-e5e3-469e-8ebd-d8212c0f429b",
+                    "path": "<Keyboard>/5",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "SwitchPlatform",
+                    "isComposite": false,
+                    "isPartOfComposite": false
                 }
             ]
         }

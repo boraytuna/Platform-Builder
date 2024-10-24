@@ -2,12 +2,13 @@ using UnityEngine;
 
 namespace Abilities
 {
+    [System.Serializable]
     public class DoubleJumpAbility : Ability
     {
         protected override void OnUnlock()
         {
-            // Any initialization logic when double jump is unlocked
-            Debug.Log("DoubleJumpAbility unlocked");
+            Debug.Log("Double jump unlocked!");
+            // Activate double jump logic here
         }
     }
 }

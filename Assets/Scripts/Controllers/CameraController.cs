@@ -1,3 +1,4 @@
+using Managers;
 using UnityEngine;
 
 namespace Controllers
@@ -12,9 +13,9 @@ namespace Controllers
 
         private void OnEnable()
         {
-            if (GamePlayEvents.Instance != null)
+            if (GamePlayEvents.instance != null)
             {
-                GamePlayEvents.Instance.OnPlayerSpawned += SetPlayerTransform;
+                GamePlayEvents.instance.OnPlayerSpawned += SetPlayerTransform;
             }
             else
             {
@@ -24,9 +25,9 @@ namespace Controllers
 
         private void OnDisable()
         {
-            if (GamePlayEvents.Instance != null)
+            if (GamePlayEvents.instance != null)
             {
-                GamePlayEvents.Instance.OnPlayerSpawned -= SetPlayerTransform;
+                GamePlayEvents.instance.OnPlayerSpawned -= SetPlayerTransform;
             }
         }
 

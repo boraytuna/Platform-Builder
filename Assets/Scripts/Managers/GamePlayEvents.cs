@@ -11,13 +11,13 @@ namespace Managers
         public event Action<Transform> OnPlayerSpawned;
         public event Action<Vector2> OnMove;
         public event Action OnJump;
-        public event Action OnBuildPlatform;
         public event Action<float> OnClimb;
         public event Action OnUseTool;
         public event Action OnInteract;
         public event Action<Type> OnAbilityUnlocked;
         public event Action OnSwitchTool;
         public event Action<int> OnSwitchPlatform;
+        public event Action OnPlacePlatform;
         private void Awake()
         {
             if (instance == null)
@@ -47,10 +47,11 @@ namespace Managers
             OnJump?.Invoke();
         }
 
-        public void BuildPlatform()
+        public void PlacePlatform()
         {
-            OnBuildPlatform?.Invoke();
+            OnPlacePlatform?.Invoke();
         }
+
 
         public void Climb(float value)
         {

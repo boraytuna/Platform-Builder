@@ -149,17 +149,30 @@ namespace Tools
             if (_currentTool != null)
             {
                 _currentTool.Use();
+
                 // After use, check if the tool still exists (consumable tools might remove themselves)
                 UpdateAvailableTools();
+
                 if (!_availableTools.Contains(_currentTool))
                 {
-                    _currentTool = null;
                     Debug.Log("Current tool has been consumed.");
 
-                    // Hide all tool sprites since no tool is selected
-                    foreach (var sprite in _toolSprites.Values)
+                    // Hide the sprite of the consumed tool
+                    if (_toolSprites.ContainsKey(_currentTool.GetType()))
                     {
-                        sprite.SetActive(false);
+                        _toolSprites[_currentTool.GetType()].SetActive(false);
+                    }
+
+                    // Select the next available tool
+                    if (_availableTools.Count > 0)
+                    {
+                        _currentToolIndex = 0; // Reset to first tool
+                        SelectTool(_currentToolIndex);
+                    }
+                    else
+                    {
+                        _currentTool = null;
+                        Debug.Log("No tools available.");
                     }
                 }
             }
@@ -168,7 +181,7 @@ namespace Tools
                 Debug.Log("No tool selected.");
             }
         }
-
+        
         private void HandleSwitchPlatform(int platformNumber)
         {
             if (_currentTool is Platformizer platformizer)

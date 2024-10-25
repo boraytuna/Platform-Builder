@@ -38,10 +38,19 @@ namespace InventorySystem
             if (_toolQuantities.ContainsKey(type))
             {
                 _toolQuantities[type]--;
+
                 if (_toolQuantities[type] <= 0)
                 {
-                    _toolQuantities.Remove(type);
-                    Debug.Log($"{type.Name} removed from inventory after use.");
+                    // Prevent Platformizer from being removed
+                    if (type != typeof(Platformizer))
+                    {
+                        _toolQuantities.Remove(type);
+                        Debug.Log($"{type.Name} removed from inventory after use.");
+                    }
+                    else
+                    {
+                        _toolQuantities[type] = 1; // Ensure Platformizer quantity stays at least 1
+                    }
                 }
             }
         }

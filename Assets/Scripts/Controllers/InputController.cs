@@ -34,6 +34,9 @@ namespace Controllers
 
             // Tool switching binding
             _inputActions.Player.SwitchTool.performed += _ => GamePlayEvents.instance.SwitchTool();
+            
+            // Platform placing binding
+            _inputActions.Player.PlacePlatform.performed += _ => GamePlayEvents.instance.PlacePlatform();
 
             // Platform switching binding
             _inputActions.Player.SwitchPlatform.performed += HandleSwitchPlatform;

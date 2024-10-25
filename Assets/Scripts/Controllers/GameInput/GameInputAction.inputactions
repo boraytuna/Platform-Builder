@@ -67,6 +67,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "PlacePlatform",
+                    "type": "Button",
+                    "id": "bcb48b25-4dd0-43ca-a992-92674ca60544",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -139,7 +148,7 @@
                 {
                     "name": "",
                     "id": "7a0f0703-eae6-48ad-8a2b-7eac99b5305d",
-                    "path": "<Mouse>/leftButton",
+                    "path": "<Keyboard>/f",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -232,6 +241,17 @@
                     "processors": "",
                     "groups": "",
                     "action": "SwitchPlatform",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "14ada50b-6884-49bc-b1ae-7dbcddd3565f",
+                    "path": "<Mouse>/leftButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "PlacePlatform",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

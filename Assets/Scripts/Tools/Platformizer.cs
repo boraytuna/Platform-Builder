@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using InventorySystem;
+using Managers;
+using UnityEngine.InputSystem;
 
 namespace Tools
 {
@@ -13,21 +15,28 @@ namespace Tools
         private Inventory _inventory;
 
         // Mapping of PlatformType to Platform Prefab
+        [Tooltip("Assign platform types and their corresponding prefabs here.")]
         public List<PlatformMapping> platformMappings = new List<PlatformMapping>();
         private readonly Dictionary<PlatformType, GameObject> _platformPrefabs = new Dictionary<PlatformType, GameObject>();
 
         // Placement variables
+        [Tooltip("Radius around the player where platforms can be placed.")]
         public float placementRadius = 5f; // Radius around the player where platforms can be placed
-        public LayerMask placementLayerMask; // Layers to consider when placing platforms
 
         private GameObject _placementPreviewInstance;
 
         private Camera _mainCamera;
 
         // Visual indicator for placement radius
+        [Tooltip("Assign a circular sprite to visualize the placement radius.")]
         public Sprite placementRadiusSprite; // Assign this in the Inspector
         private GameObject _placementRadiusIndicator;
         private SpriteRenderer _radiusSpriteRenderer;
+
+        // Flag to determine if placement is valid
+        private bool _isPlacementValid = true;
+        
+        private readonly Dictionary<SpriteRenderer, Color> _originalColors = new Dictionary<SpriteRenderer, Color>();
 
         private void Awake()
         {
@@ -42,12 +51,23 @@ namespace Tools
             InitializePlatformPrefabs();
             UpdateAvailablePlatforms();
             CreatePlacementPreview();
+
+            // Subscribe to the OnUseTool event
+            GamePlayEvents.instance.OnPlacePlatform += HandlePlacePlatform;
+        }
+
+        private void OnDestroy()
+        {
+            // Unsubscribe from the event
+            if (GamePlayEvents.instance != null)
+            {
+                GamePlayEvents.instance.OnPlacePlatform -= HandlePlacePlatform;
+            }
         }
 
         private void Update()
         {
             UpdatePlacementPreview();
-            HandlePlacementInput();
         }
 
         private void InitializePlatformPrefabs()
@@ -79,9 +99,14 @@ namespace Tools
                 }
 
                 UpdatePlacementPreviewInstance();
+                UpdateRadiusIndicatorVisibility();
             }
         }
 
+        /// <summary>
+        /// Switches to the platform at the given index.
+        /// </summary>
+        /// <param name="index">Index of the platform to switch to.</param>
         public void SwitchPlatform(int index)
         {
             UpdateAvailablePlatforms();
@@ -99,16 +124,17 @@ namespace Tools
                 Debug.Log($"{toolName}: Switched to platform {platformType} (Quantity: {_inventory.GetPlatformQuantity(platformType)})");
 
                 UpdatePlacementPreviewInstance();
+                UpdateRadiusIndicatorVisibility();
             }
-            else
-            {
-                Debug.LogWarning($"{toolName}: Invalid platform index {index}");
-            }
+            // else
+            // {
+            //     Debug.LogWarning($"{toolName}: Invalid platform index {index}");
+            // }
         }
 
         public override void Use()
         {
-            // The placement logic is handled in Update(), so we don't need to implement Use() here.
+            // The placement logic is handled via the OnUseTool event
         }
 
         private void CreatePlacementPreview()
@@ -116,6 +142,9 @@ namespace Tools
             UpdatePlacementPreviewInstance();
         }
 
+        /// <summary>
+        /// Creates or updates the placement preview instance.
+        /// </summary>
         private void UpdatePlacementPreviewInstance()
         {
             // Destroy the old placement preview instance if it exists
@@ -134,15 +163,14 @@ namespace Tools
 
             if (_platformPrefabs.TryGetValue(currentPlatformType, out GameObject prefab))
             {
-                // Instantiate the prefab as the placement preview
-                _placementPreviewInstance = Instantiate(prefab);
+                // Instantiate the prefab as the placement preview without parenting to the player
+                _placementPreviewInstance = Instantiate(prefab, Vector3.zero, Quaternion.identity);
                 _placementPreviewInstance.name = "PlacementPreview";
-                _placementPreviewInstance.transform.SetParent(transform);
-
+                
                 // Disable any colliders and scripts on the preview instance
-                foreach (var collider2D1 in _placementPreviewInstance.GetComponentsInChildren<Collider2D>())
+                foreach (var collider2D in _placementPreviewInstance.GetComponentsInChildren<Collider2D>())
                 {
-                    collider2D1.enabled = false;
+                    collider2D.enabled = false;
                 }
 
                 foreach (var component in _placementPreviewInstance.GetComponentsInChildren<MonoBehaviour>())
@@ -150,13 +178,19 @@ namespace Tools
                     component.enabled = false;
                 }
 
-                // Make the preview semi-transparent
+                // Make the preview semi-transparent and store original colors
                 foreach (var renderer in _placementPreviewInstance.GetComponentsInChildren<SpriteRenderer>())
                 {
-                    Color color = renderer.color;
-                    color.a = 0.5f;
-                    renderer.color = color;
+                    Color originalColor = renderer.color;
+                    originalColor.a = 0.5f;
+                    renderer.color = originalColor;
+
+                    // Store the original color if not already stored
+                    _originalColors.TryAdd(renderer, originalColor);
                 }
+
+                // Assign to Ignore Raycast layer to prevent interference
+                _placementPreviewInstance.layer = LayerMask.NameToLayer("Ignore Raycast");
             }
             else
             {
@@ -164,6 +198,9 @@ namespace Tools
             }
         }
 
+        /// <summary>
+        /// Updates the position and color of the placement preview based on the mouse position.
+        /// </summary>
         private void UpdatePlacementPreview()
         {
             if (_placementPreviewInstance == null)
@@ -171,39 +208,82 @@ namespace Tools
                 return;
             }
 
-            // Get mouse position in world space
-            Vector3 mousePosition = _mainCamera.ScreenToWorldPoint(Input.mousePosition);
-            mousePosition.z = 0f;
+            // Get mouse position in screen space
+            Vector3 mouseScreenPosition = Mouse.current.position.ReadValue();
 
-            // Calculate the direction and distance from the player to the mouse position
-            Vector3 direction = mousePosition - transform.position;
+            // Set the z to the distance from the camera to the placement plane (assuming placement plane at z=0)
+            mouseScreenPosition.z = Mathf.Abs(_mainCamera.transform.position.z);
+
+            // Convert to world space
+            Vector3 worldPosition = _mainCamera.ScreenToWorldPoint(mouseScreenPosition);
+
+            // Calculate direction and distance from the player to the mouse position
+            Vector3 direction = worldPosition - transform.position;
             float distance = direction.magnitude;
 
-            // Clamp the distance to the placement radius
+            // Determine if placement is valid
+            _isPlacementValid = distance <= placementRadius;
+
+            // Clamp the direction within the placement radius
             if (distance > placementRadius)
             {
                 direction = direction.normalized * placementRadius;
-                distance = placementRadius;
             }
 
-            // Set the position of the placement preview
             Vector3 placementPosition = transform.position + direction;
 
-            // Optionally, snap to a grid
+            // Optionally, snap to a grid (e.g., 1 unit)
             placementPosition.x = Mathf.Round(placementPosition.x);
             placementPosition.y = Mathf.Round(placementPosition.y);
+            placementPosition.z = 0f; // Ensure z is 0
 
+            // Update the preview's position
             _placementPreviewInstance.transform.position = placementPosition;
-        }
 
-        private void HandlePlacementInput()
+            // Update the preview's color based on placement validity
+            UpdatePreviewColor();
+        }
+        
+        /// <summary>
+        /// Updates the color of the placement preview based on placement validity.
+        /// </summary>
+        private void UpdatePreviewColor()
         {
-            if (Input.GetMouseButtonDown(0)) // Left mouse button
+            SpriteRenderer[] renderers = _placementPreviewInstance.GetComponentsInChildren<SpriteRenderer>();
+            foreach (var renderer in renderers)
             {
-                PlacePlatform();
+                if (_isPlacementValid)
+                {
+                    // Restore original color with alpha = 0.5f
+                    if (_originalColors.TryGetValue(renderer, out Color originalColor))
+                    {
+                        renderer.color = new Color(originalColor.r, originalColor.g, originalColor.b, 0.5f);
+                    }
+                }
+                else
+                {
+                    // Set color to red with alpha = 0.5f indicating invalid placement
+                    renderer.color = new Color(1f, 0f, 0f, 0.5f);
+                }
             }
         }
 
+        /// <summary>
+        /// Handles the UseTool event triggered by the UseTool input.
+        /// </summary>
+        private void HandlePlacePlatform()
+        {
+            if (!isActiveAndEnabled)
+            {
+                return; // Do not place if the tool is not active
+            }
+
+            PlacePlatform();
+        }
+
+        /// <summary>
+        /// Places the platform at the current placement preview position.
+        /// </summary>
         private void PlacePlatform()
         {
             UpdateAvailablePlatforms();
@@ -230,10 +310,20 @@ namespace Tools
                 return;
             }
 
-            // Get the placement position
-            Vector3 placementPosition = _placementPreviewInstance.transform.position;
+            // Check if placement is valid
+            if (!_isPlacementValid)
+            {
+                Debug.Log("Cannot place platform outside of placement radius.");
+                return;
+            }
 
-            // Instantiate the platform prefab
+            // Get the placement position from the preview instance
+            Vector3 placementPosition = _mainCamera.ScreenToWorldPoint(Mouse.current.position.ReadValue());
+
+            // Ensure z-axis is set to 0
+            placementPosition.z = 0f;
+
+            // Instantiate the platform prefab at the placement position
             Instantiate(platformPrefab, placementPosition, Quaternion.identity);
 
             Debug.Log($"{toolName}: Built platform {platformType} at {placementPosition}.");
@@ -259,6 +349,7 @@ namespace Tools
             }
 
             CreatePlacementRadiusIndicator();
+            UpdateRadiusIndicatorVisibility();
         }
 
         public override void OnDeselect()
@@ -271,6 +362,9 @@ namespace Tools
             DestroyPlacementRadiusIndicator();
         }
 
+        /// <summary>
+        /// Creates the visual indicator for the placement radius.
+        /// </summary>
         private void CreatePlacementRadiusIndicator()
         {
             if (_placementRadiusIndicator == null)
@@ -285,18 +379,24 @@ namespace Tools
                 if (placementRadiusSprite != null)
                 {
                     _radiusSpriteRenderer.sprite = placementRadiusSprite;
+
+                    // Calculate the scale factor based on the sprite's size
+                    float spriteSize = _radiusSpriteRenderer.sprite.bounds.size.x; // Assuming the sprite is square
+                    float diameter = placementRadius * 2f;
+                    float scaleFactor = diameter / spriteSize;
+
+                    _placementRadiusIndicator.transform.localScale = new Vector3(scaleFactor, scaleFactor, 1f);
                 }
                 else
                 {
                     Debug.LogWarning("Placement radius sprite not assigned.");
                 }
-
-                // Scale the sprite to match the placement radius
-                float diameter = placementRadius * 2f;
-                _placementRadiusIndicator.transform.localScale = new Vector3(diameter, diameter, 1f);
             }
         }
 
+        /// <summary>
+        /// Destroys the visual indicator for the placement radius.
+        /// </summary>
         private void DestroyPlacementRadiusIndicator()
         {
             if (_placementRadiusIndicator != null)
@@ -305,6 +405,32 @@ namespace Tools
                 _placementRadiusIndicator = null;
                 _radiusSpriteRenderer = null;
             }
+        }
+
+        /// <summary>
+        /// Updates the visibility of the placement radius indicator based on inventory availability.
+        /// </summary>
+        private void UpdateRadiusIndicatorVisibility()
+        {
+            if (_radiusSpriteRenderer != null)
+            {
+                bool hasPlatforms = HasAvailablePlatforms();
+                _placementRadiusIndicator.SetActive(hasPlatforms);
+            }
+        }
+
+        /// <summary>
+        /// Checks if the player has any platforms available in the inventory.
+        /// </summary>
+        /// <returns>True if at least one platform is available; otherwise, false.</returns>
+        private bool HasAvailablePlatforms()
+        {
+            foreach (var platform in _availablePlatforms)
+            {
+                if (_inventory.GetPlatformQuantity(platform) > 0)
+                    return true;
+            }
+            return false;
         }
     }
 

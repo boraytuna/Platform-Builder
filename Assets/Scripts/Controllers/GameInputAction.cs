@@ -91,6 +91,15 @@ namespace Controllers
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""PlacePlatform"",
+                    ""type"": ""Button"",
+                    ""id"": ""bcb48b25-4dd0-43ca-a992-92674ca60544"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -163,7 +172,7 @@ namespace Controllers
                 {
                     ""name"": """",
                     ""id"": ""7a0f0703-eae6-48ad-8a2b-7eac99b5305d"",
-                    ""path"": ""<Mouse>/leftButton"",
+                    ""path"": ""<Keyboard>/f"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
@@ -258,6 +267,17 @@ namespace Controllers
                     ""action"": ""SwitchPlatform"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""14ada50b-6884-49bc-b1ae-7dbcddd3565f"",
+                    ""path"": ""<Mouse>/leftButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""PlacePlatform"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -273,6 +293,7 @@ namespace Controllers
             m_Player_UseTool = m_Player.FindAction("UseTool", throwIfNotFound: true);
             m_Player_Interact = m_Player.FindAction("Interact", throwIfNotFound: true);
             m_Player_SwitchPlatform = m_Player.FindAction("SwitchPlatform", throwIfNotFound: true);
+            m_Player_PlacePlatform = m_Player.FindAction("PlacePlatform", throwIfNotFound: true);
         }
 
         public void Dispose()
@@ -341,6 +362,7 @@ namespace Controllers
         private readonly InputAction m_Player_UseTool;
         private readonly InputAction m_Player_Interact;
         private readonly InputAction m_Player_SwitchPlatform;
+        private readonly InputAction m_Player_PlacePlatform;
         public struct PlayerActions
         {
             private @GameInputAction m_Wrapper;
@@ -352,6 +374,7 @@ namespace Controllers
             public InputAction @UseTool => m_Wrapper.m_Player_UseTool;
             public InputAction @Interact => m_Wrapper.m_Player_Interact;
             public InputAction @SwitchPlatform => m_Wrapper.m_Player_SwitchPlatform;
+            public InputAction @PlacePlatform => m_Wrapper.m_Player_PlacePlatform;
             public InputActionMap Get() { return m_Wrapper.m_Player; }
             public void Enable() { Get().Enable(); }
             public void Disable() { Get().Disable(); }
@@ -382,6 +405,9 @@ namespace Controllers
                 @SwitchPlatform.started += instance.OnSwitchPlatform;
                 @SwitchPlatform.performed += instance.OnSwitchPlatform;
                 @SwitchPlatform.canceled += instance.OnSwitchPlatform;
+                @PlacePlatform.started += instance.OnPlacePlatform;
+                @PlacePlatform.performed += instance.OnPlacePlatform;
+                @PlacePlatform.canceled += instance.OnPlacePlatform;
             }
 
             private void UnregisterCallbacks(IPlayerActions instance)
@@ -407,6 +433,9 @@ namespace Controllers
                 @SwitchPlatform.started -= instance.OnSwitchPlatform;
                 @SwitchPlatform.performed -= instance.OnSwitchPlatform;
                 @SwitchPlatform.canceled -= instance.OnSwitchPlatform;
+                @PlacePlatform.started -= instance.OnPlacePlatform;
+                @PlacePlatform.performed -= instance.OnPlacePlatform;
+                @PlacePlatform.canceled -= instance.OnPlacePlatform;
             }
 
             public void RemoveCallbacks(IPlayerActions instance)
@@ -433,6 +462,7 @@ namespace Controllers
             void OnUseTool(InputAction.CallbackContext context);
             void OnInteract(InputAction.CallbackContext context);
             void OnSwitchPlatform(InputAction.CallbackContext context);
+            void OnPlacePlatform(InputAction.CallbackContext context);
         }
     }
 }

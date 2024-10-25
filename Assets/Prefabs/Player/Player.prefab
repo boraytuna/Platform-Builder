@@ -359,10 +359,7 @@ MonoBehaviour:
     prefab: {fileID: 5102433979914382901, guid: a38b20ab415754978ae8a7056c096d4d, type: 3}
   - platformType: 9
     prefab: {fileID: 102024984089251834, guid: 250874d97baae46ec970edfe93b3ee67, type: 3}
-  placementRadius: 6.6
-  placementLayerMask:
-    serializedVersion: 2
-    m_Bits: 0
+  placementRadius: 20
   placementRadiusSprite: {fileID: 21300000, guid: 75bcd6a88349f4561a1e72f3001b3510, type: 3}
 --- !u!1 &4291924743519312475
 GameObject:

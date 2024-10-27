@@ -66,15 +66,6 @@ namespace Controllers
                     ""initialStateCheck"": false
                 },
                 {
-                    ""name"": ""UseTool"",
-                    ""type"": ""Button"",
-                    ""id"": ""9631481e-5c39-4dad-8bfc-28309e5d42fd"",
-                    ""expectedControlType"": ""Button"",
-                    ""processors"": """",
-                    ""interactions"": """",
-                    ""initialStateCheck"": false
-                },
-                {
                     ""name"": ""Interact"",
                     ""type"": ""Button"",
                     ""id"": ""42f95228-d6f8-4b41-830a-085719bdec42"",
@@ -96,6 +87,15 @@ namespace Controllers
                     ""name"": ""PlacePlatform"",
                     ""type"": ""Button"",
                     ""id"": ""bcb48b25-4dd0-43ca-a992-92674ca60544"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""UseTool"",
+                    ""type"": ""Button"",
+                    ""id"": ""832ab5e3-b9e9-4ef8-bf77-61972ae6b3a4"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
                     ""interactions"": """",
@@ -166,17 +166,6 @@ namespace Controllers
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""SwitchTool"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""7a0f0703-eae6-48ad-8a2b-7eac99b5305d"",
-                    ""path"": ""<Keyboard>/f"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""UseTool"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 },
@@ -278,6 +267,17 @@ namespace Controllers
                     ""action"": ""PlacePlatform"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""1dd36e51-6ea6-4a30-834c-43618cfaae6b"",
+                    ""path"": ""<Mouse>/leftButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""UseTool"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -290,10 +290,10 @@ namespace Controllers
             m_Player_Jump = m_Player.FindAction("Jump", throwIfNotFound: true);
             m_Player_Climb = m_Player.FindAction("Climb", throwIfNotFound: true);
             m_Player_SwitchTool = m_Player.FindAction("SwitchTool", throwIfNotFound: true);
-            m_Player_UseTool = m_Player.FindAction("UseTool", throwIfNotFound: true);
             m_Player_Interact = m_Player.FindAction("Interact", throwIfNotFound: true);
             m_Player_SwitchPlatform = m_Player.FindAction("SwitchPlatform", throwIfNotFound: true);
             m_Player_PlacePlatform = m_Player.FindAction("PlacePlatform", throwIfNotFound: true);
+            m_Player_UseTool = m_Player.FindAction("UseTool", throwIfNotFound: true);
         }
 
         public void Dispose()
@@ -359,10 +359,10 @@ namespace Controllers
         private readonly InputAction m_Player_Jump;
         private readonly InputAction m_Player_Climb;
         private readonly InputAction m_Player_SwitchTool;
-        private readonly InputAction m_Player_UseTool;
         private readonly InputAction m_Player_Interact;
         private readonly InputAction m_Player_SwitchPlatform;
         private readonly InputAction m_Player_PlacePlatform;
+        private readonly InputAction m_Player_UseTool;
         public struct PlayerActions
         {
             private @GameInputAction m_Wrapper;
@@ -371,10 +371,10 @@ namespace Controllers
             public InputAction @Jump => m_Wrapper.m_Player_Jump;
             public InputAction @Climb => m_Wrapper.m_Player_Climb;
             public InputAction @SwitchTool => m_Wrapper.m_Player_SwitchTool;
-            public InputAction @UseTool => m_Wrapper.m_Player_UseTool;
             public InputAction @Interact => m_Wrapper.m_Player_Interact;
             public InputAction @SwitchPlatform => m_Wrapper.m_Player_SwitchPlatform;
             public InputAction @PlacePlatform => m_Wrapper.m_Player_PlacePlatform;
+            public InputAction @UseTool => m_Wrapper.m_Player_UseTool;
             public InputActionMap Get() { return m_Wrapper.m_Player; }
             public void Enable() { Get().Enable(); }
             public void Disable() { Get().Disable(); }
@@ -396,9 +396,6 @@ namespace Controllers
                 @SwitchTool.started += instance.OnSwitchTool;
                 @SwitchTool.performed += instance.OnSwitchTool;
                 @SwitchTool.canceled += instance.OnSwitchTool;
-                @UseTool.started += instance.OnUseTool;
-                @UseTool.performed += instance.OnUseTool;
-                @UseTool.canceled += instance.OnUseTool;
                 @Interact.started += instance.OnInteract;
                 @Interact.performed += instance.OnInteract;
                 @Interact.canceled += instance.OnInteract;
@@ -408,6 +405,9 @@ namespace Controllers
                 @PlacePlatform.started += instance.OnPlacePlatform;
                 @PlacePlatform.performed += instance.OnPlacePlatform;
                 @PlacePlatform.canceled += instance.OnPlacePlatform;
+                @UseTool.started += instance.OnUseTool;
+                @UseTool.performed += instance.OnUseTool;
+                @UseTool.canceled += instance.OnUseTool;
             }
 
             private void UnregisterCallbacks(IPlayerActions instance)
@@ -424,9 +424,6 @@ namespace Controllers
                 @SwitchTool.started -= instance.OnSwitchTool;
                 @SwitchTool.performed -= instance.OnSwitchTool;
                 @SwitchTool.canceled -= instance.OnSwitchTool;
-                @UseTool.started -= instance.OnUseTool;
-                @UseTool.performed -= instance.OnUseTool;
-                @UseTool.canceled -= instance.OnUseTool;
                 @Interact.started -= instance.OnInteract;
                 @Interact.performed -= instance.OnInteract;
                 @Interact.canceled -= instance.OnInteract;
@@ -436,6 +433,9 @@ namespace Controllers
                 @PlacePlatform.started -= instance.OnPlacePlatform;
                 @PlacePlatform.performed -= instance.OnPlacePlatform;
                 @PlacePlatform.canceled -= instance.OnPlacePlatform;
+                @UseTool.started -= instance.OnUseTool;
+                @UseTool.performed -= instance.OnUseTool;
+                @UseTool.canceled -= instance.OnUseTool;
             }
 
             public void RemoveCallbacks(IPlayerActions instance)
@@ -459,10 +459,10 @@ namespace Controllers
             void OnJump(InputAction.CallbackContext context);
             void OnClimb(InputAction.CallbackContext context);
             void OnSwitchTool(InputAction.CallbackContext context);
-            void OnUseTool(InputAction.CallbackContext context);
             void OnInteract(InputAction.CallbackContext context);
             void OnSwitchPlatform(InputAction.CallbackContext context);
             void OnPlacePlatform(InputAction.CallbackContext context);
+            void OnUseTool(InputAction.CallbackContext context);
         }
     }
 }

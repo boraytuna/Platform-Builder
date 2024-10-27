@@ -12,7 +12,6 @@ GameObject:
   - component: {fileID: 5025391279718236657}
   - component: {fileID: 3235020907800665285}
   - component: {fileID: 336841653403397312}
-  - component: {fileID: 8775052142424399401}
   m_Layer: 0
   m_Name: JetpackPrefab
   m_TagString: Untagged
@@ -33,7 +32,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 7
+  m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &5025391279718236657
 SpriteRenderer:
@@ -146,16 +145,3 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   toolName: 
   quantity: 1
---- !u!114 &8775052142424399401
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7096542945224152734}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 57aadc57abff42cd99e7ade522f16c70, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _toolName: Jetpack

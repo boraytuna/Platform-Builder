@@ -1,21 +1,41 @@
 using Managers;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Tools;
 
 namespace Controllers
 {
     public class InputController : MonoBehaviour
     {
         private GameInputAction _inputActions;
+        private ToolController _toolController; // Reference to ToolController
 
         private void Awake()
         {
             _inputActions = new GameInputAction();
         }
 
+        private void Start()
+        {
+            // Attempt to get the ToolController component
+            _toolController = FindObjectOfType<ToolController>();
+            
+            if (_toolController == null)
+            {
+                Debug.LogError("ToolController component is missing in the scene.");
+            }
+        }
+        
         private void OnEnable()
         {
             _inputActions.Enable();
+
+            // Check if GamePlayEvents.instance is available
+            if (GamePlayEvents.instance == null)
+            {
+                Debug.LogError("GamePlayEvents instance is null. Make sure it is initialized in the scene.");
+                return;
+            }
 
             // Movement bindings
             _inputActions.Player.Move.performed += context => GamePlayEvents.instance.Move(context.ReadValue<Vector2>());
@@ -30,13 +50,10 @@ namespace Controllers
             _inputActions.Player.Interact.performed += _ => GamePlayEvents.instance.Interact();
 
             // Tool usage binding
-            _inputActions.Player.UseTool.performed += _ => GamePlayEvents.instance.UseTool();
+            _inputActions.Player.UseTool.performed += _ => GamePlayEvents.instance.UseTool(); // Trigger general UseTool event
 
             // Tool switching binding
             _inputActions.Player.SwitchTool.performed += _ => GamePlayEvents.instance.SwitchTool();
-            
-            // Platform placing binding
-            _inputActions.Player.PlacePlatform.performed += _ => GamePlayEvents.instance.PlacePlatform();
 
             // Platform switching binding
             _inputActions.Player.SwitchPlatform.performed += HandleSwitchPlatform;
@@ -49,12 +66,16 @@ namespace Controllers
 
         private void HandleSwitchPlatform(InputAction.CallbackContext context)
         {
+            if (GamePlayEvents.instance == null)
+            {
+                Debug.LogError("GamePlayEvents instance is null.");
+                return;
+            }
 
             string keyPressed = context.control.name; // Get the key name (e.g., "1", "2", "3")
 
-            if (keyPressed == "1" || keyPressed == "2" || keyPressed == "3" || keyPressed == "4" || keyPressed == "5")
+            if (int.TryParse(keyPressed, out int platformNumber) && platformNumber >= 1 && platformNumber <= 5)
             {
-                int platformNumber = int.Parse(keyPressed);
                 GamePlayEvents.instance.SwitchPlatform(platformNumber);
             }
         }

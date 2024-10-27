@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
+using InventorySystem;
 using Managers;
 using UnityEngine;
-using InventorySystem;
 
 namespace Tools
-{
+{ 
     public class ToolController : MonoBehaviour
     {
         private Tool _currentTool;
@@ -20,7 +20,7 @@ namespace Tools
         public GameObject grapplerSprite;
         public GameObject jetpackSprite;
 
-        private Dictionary<Type, GameObject> _toolSprites = new Dictionary<Type, GameObject>();
+        private readonly Dictionary<Type, GameObject> _toolSprites = new Dictionary<Type, GameObject>();
 
         private void Awake()
         {
@@ -48,8 +48,17 @@ namespace Tools
 
         private void OnEnable()
         {
+            // Ensure GamePlayEvents instance exists
+            if (GamePlayEvents.instance == null)
+            {
+                Debug.LogError("GamePlayEvents instance not found in the scene.");
+                return;
+            }
+
+            // Subscribe to gameplay events
             GamePlayEvents.instance.OnSwitchTool += HandleSwitchTool;
             GamePlayEvents.instance.OnUseTool += HandleUseTool;
+            GamePlayEvents.instance.OnPlacePlatform += HandleUseTool;
             GamePlayEvents.instance.OnSwitchPlatform += HandleSwitchPlatform;
         }
 
@@ -57,8 +66,10 @@ namespace Tools
         {
             if (GamePlayEvents.instance != null)
             {
+                // Unsubscribe from gameplay events
                 GamePlayEvents.instance.OnSwitchTool -= HandleSwitchTool;
                 GamePlayEvents.instance.OnUseTool -= HandleUseTool;
+                GamePlayEvents.instance.OnPlacePlatform -= HandleUseTool; 
                 GamePlayEvents.instance.OnSwitchPlatform -= HandleSwitchPlatform;
             }
         }
@@ -68,7 +79,9 @@ namespace Tools
             _currentTool?.UpdateTool();
         }
 
-        // Initializes the dictionary mapping tool types to their sprites
+        /// <summary>
+        /// Initializes the dictionary mapping tool types to their sprites.
+        /// </summary>
         private void InitializeToolSprites()
         {
             _toolSprites.Add(typeof(Platformizer), platformizerSprite);
@@ -81,7 +94,18 @@ namespace Tools
                 sprite.SetActive(false);
             }
         }
+        
+        /// <summary>
+        /// Checks if the currently selected tool is of type T.
+        /// </summary>
+        public bool IsSelectedTool<T>() where T : Tool
+        {
+            return _currentTool != null && _currentTool is T;
+        }
 
+        /// <summary>
+        /// Handles the tool switching logic when the OnSwitchTool event is triggered.
+        /// </summary>
         private void HandleSwitchTool()
         {
             UpdateAvailableTools();
@@ -100,6 +124,9 @@ namespace Tools
             SelectTool(_currentToolIndex);
         }
 
+        /// <summary>
+        /// Updates the list of available tools from the inventory.
+        /// </summary>
         private void UpdateAvailableTools()
         {
             _availableTools = _inventory.GetTools();
@@ -111,6 +138,9 @@ namespace Tools
             }
         }
 
+        /// <summary>
+        /// Selects a tool based on the provided index.
+        /// </summary>
         private void SelectTool(int index)
         {
             // Deselect current tool if any
@@ -132,9 +162,9 @@ namespace Tools
 
                 // Show the sprite corresponding to the selected tool
                 Type toolType = _currentTool.GetType();
-                if (_toolSprites.ContainsKey(toolType))
+                if (_toolSprites.TryGetValue(toolType, out var sprite))
                 {
-                    _toolSprites[toolType].SetActive(true);
+                    sprite.SetActive(true);
                 }
             }
             else
@@ -144,6 +174,9 @@ namespace Tools
             }
         }
 
+        /// <summary>
+        /// Handles the usage of the current tool when the OnUseTool or OnPlacePlatform event is triggered.
+        /// </summary>
         private void HandleUseTool()
         {
             if (_currentTool != null)
@@ -182,6 +215,9 @@ namespace Tools
             }
         }
         
+        /// <summary>
+        /// Handles platform switching when the OnSwitchPlatform event is triggered.
+        /// </summary>
         private void HandleSwitchPlatform(int platformNumber)
         {
             if (_currentTool is Platformizer platformizer)

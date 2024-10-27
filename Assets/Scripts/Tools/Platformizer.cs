@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using InventorySystem;
@@ -37,6 +38,11 @@ namespace Tools
         private bool _isPlacementValid = true;
         
         private readonly Dictionary<SpriteRenderer, Color> _originalColors = new Dictionary<SpriteRenderer, Color>();
+        
+        private ToolController _toolController;
+        
+        private readonly float _placeCooldown = 0.2f; // Cooldown duration in seconds
+        private bool _canPlacePlatform = true;
 
         private void Awake()
         {
@@ -45,6 +51,7 @@ namespace Tools
 
         private void Start()
         {
+            _toolController = GetComponent<ToolController>();
             _inventory = GetComponent<Inventory>();
             _mainCamera = Camera.main;
 
@@ -134,7 +141,18 @@ namespace Tools
 
         public override void Use()
         {
-            // The placement logic is handled via the OnUseTool event
+            if (_canPlacePlatform && _toolController.IsSelectedTool<Platformizer>())
+            {
+                PlacePlatform();
+                StartCoroutine(PlaceCooldown());
+            }
+        }
+
+        private IEnumerator PlaceCooldown()
+        {
+            _canPlacePlatform = false;
+            yield return new WaitForSeconds(_placeCooldown);
+            _canPlacePlatform = true;
         }
 
         private void CreatePlacementPreview()
@@ -277,13 +295,16 @@ namespace Tools
             {
                 return; // Do not place if the tool is not active
             }
-
-            PlacePlatform();
+            
+            if (_toolController.IsSelectedTool<Platformizer>()) // Only activate if Jetpack is selected
+            {
+                Use();
+            }
         }
 
-        /// <summary>
-        /// Places the platform at the current placement preview position.
-        /// </summary>
+        // /// <summary>
+        // /// Places the platform at the current placement preview position.
+        // /// </summary>
         private void PlacePlatform()
         {
             UpdateAvailablePlatforms();
@@ -319,9 +340,7 @@ namespace Tools
 
             // Get the placement position from the preview instance
             Vector3 placementPosition = _mainCamera.ScreenToWorldPoint(Mouse.current.position.ReadValue());
-
-            // Ensure z-axis is set to 0
-            placementPosition.z = 0f;
+            placementPosition.z = 0f; // Ensure z-axis is set to 0
 
             // Instantiate the platform prefab at the placement position
             Instantiate(platformPrefab, placementPosition, Quaternion.identity);
@@ -333,6 +352,23 @@ namespace Tools
 
             // Update available platforms after consumption
             UpdateAvailablePlatforms();
+
+            // Adjust _currentPlatformIndex if the current platform type has been depleted
+            if (_currentPlatformIndex >= _availablePlatforms.Count)
+            {
+                _currentPlatformIndex = _availablePlatforms.Count - 1;
+            }
+
+            // If no platforms are available, remove the preview instance
+            if (_availablePlatforms.Count == 0)
+            {
+                Destroy(_placementPreviewInstance);
+                _placementPreviewInstance = null;
+            }
+            else
+            {
+                UpdatePlacementPreviewInstance(); // Update the preview for the new platform type
+            }
         }
 
         public override void OnSelect()

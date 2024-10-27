@@ -12,12 +12,13 @@ namespace Managers
         public event Action<Vector2> OnMove;
         public event Action OnJump;
         public event Action<float> OnClimb;
-        public event Action OnUseTool;
         public event Action OnInteract;
         public event Action<Type> OnAbilityUnlocked;
         public event Action OnSwitchTool;
         public event Action<int> OnSwitchPlatform;
         public event Action OnPlacePlatform;
+        public event Action OnUseTool; 
+
         private void Awake()
         {
             if (instance == null)
@@ -47,28 +48,16 @@ namespace Managers
             OnJump?.Invoke();
         }
 
-        public void PlacePlatform()
-        {
-            OnPlacePlatform?.Invoke();
-        }
-
-
         public void Climb(float value)
         {
             OnClimb?.Invoke(value);
-        }
-
-        public void UseTool()
-        {
-            OnUseTool?.Invoke();
         }
 
         public void Interact()
         {
             OnInteract?.Invoke();
         }
-    
-        // Method to invoke the ability unlocked event
+        
         public void AbilityUnlocked(Type abilityType)
         {
             OnAbilityUnlocked?.Invoke(abilityType);
@@ -82,6 +71,16 @@ namespace Managers
         public void SwitchPlatform(int platformNumber)
         {
             OnSwitchPlatform?.Invoke(platformNumber);
+        }
+        
+        public void PlacePlatform()
+        {
+            OnPlacePlatform?.Invoke();
+        }
+
+        public void UseTool()
+        {
+            OnUseTool?.Invoke(); // Trigger the general UseTool event
         }
     }
 }

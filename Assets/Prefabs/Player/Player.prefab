@@ -133,7 +133,7 @@ GameObject:
   - component: {fileID: -2190545230374712284}
   - component: {fileID: 8826719696149586466}
   - component: {fileID: -2941948451845420026}
-  - component: {fileID: 4447034014647116023}
+  - component: {fileID: 2098114726490591514}
   - component: {fileID: 4285711066185878091}
   m_Layer: 0
   m_Name: Player
@@ -392,7 +392,7 @@ MonoBehaviour:
   toolName: Jetpack
   jetpackForce: 25
   jetpackDuration: 2
---- !u!114 &4447034014647116023
+--- !u!114 &2098114726490591514
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -405,13 +405,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   toolName: Grappler
-  grappleLayers:
+  stoppingDistance: 5
+  grapplingSpeed: 20
+  grappleLayerMask:
     serializedVersion: 2
     m_Bits: 192
-  maxGrappleDistance: 100
-  pullSpeed: 100
-  reachThreshold: 1
-  grappleCooldown: 1
 --- !u!120 &4285711066185878091
 LineRenderer:
   serializedVersion: 2
@@ -433,7 +431,7 @@ LineRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 0}
+  - {fileID: 10306, guid: 0000000000000000f000000000000000, type: 0}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -459,7 +457,7 @@ LineRenderer:
   - {x: 0, y: 0, z: 1}
   m_Parameters:
     serializedVersion: 3
-    widthMultiplier: 1
+    widthMultiplier: 0.25
     widthCurve:
       serializedVersion: 2
       m_Curve:
@@ -477,8 +475,8 @@ LineRenderer:
       m_RotationOrder: 4
     colorGradient:
       serializedVersion: 2
-      key0: {r: 1, g: 1, b: 1, a: 1}
-      key1: {r: 1, g: 1, b: 1, a: 1}
+      key0: {r: 0, g: 0, b: 0, a: 1}
+      key1: {r: 0, g: 0, b: 0, a: 1}
       key2: {r: 0, g: 0, b: 0, a: 0}
       key3: {r: 0, g: 0, b: 0, a: 0}
       key4: {r: 0, g: 0, b: 0, a: 0}
@@ -502,13 +500,13 @@ LineRenderer:
       atime6: 0
       atime7: 0
       m_Mode: 0
-      m_ColorSpace: -1
+      m_ColorSpace: 0
       m_NumColorKeys: 2
       m_NumAlphaKeys: 2
     numCornerVertices: 0
     numCapVertices: 0
     alignment: 0
-    textureMode: 0
+    textureMode: 4
     textureScale: {x: 1, y: 1}
     shadowBias: 0.5
     generateLightingData: 0

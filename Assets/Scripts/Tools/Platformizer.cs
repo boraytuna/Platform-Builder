@@ -35,7 +35,7 @@ namespace Tools
         private SpriteRenderer _radiusSpriteRenderer;
 
         // Flag to determine if placement is valid
-        private bool _isPlacementValid = true;
+        private bool _isPlacementValid = false;
         
         private readonly Dictionary<SpriteRenderer, Color> _originalColors = new Dictionary<SpriteRenderer, Color>();
         

@@ -18,6 +18,7 @@ namespace Tools
         public float jetpackDuration = 2f;
 
         private bool _isJetpackActive;
+        private bool _isJetpackConsumed;
 
         private void Awake()
         {
@@ -44,8 +45,7 @@ namespace Tools
             {
                 // Activate the jetpack
                 ActivateJetpack();
-
-                // Consume the jetpack after use
+                
                 _inventory.ConsumeTool<Jetpack>();
             }
             else

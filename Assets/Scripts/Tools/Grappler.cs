@@ -1,253 +1,149 @@
-using System.Collections;
-using UnityEngine;
 using InventorySystem;
+using UnityEngine;
 using UnityEngine.InputSystem;
 
 namespace Tools
 {
-    [RequireComponent(typeof(Rigidbody2D))]
-    [RequireComponent(typeof(LineRenderer))]
     public class Grappler : Tool
     {
-        // References
-        private Inventory _inventory;
-        private Rigidbody2D _rb;
-        private LineRenderer _lineRenderer;
-
-        // Grappling settings
         [Header("Grappler Settings")]
-        [Tooltip("Layers that can be grappled (e.g., Ground, Wall).")]
-        public LayerMask grappleLayers;
+        public float stoppingDistance = 2f;     // Distance at which grappling stops
+        public float grapplingSpeed = 20f;      // Speed of the player when grappling
+        public LayerMask grappleLayerMask;      // Layers that can be grappled onto (e.g., ground and wall)
 
-        [Tooltip("Maximum distance for grappling.")]
-        public float maxGrappleDistance = 15f;
-
-        [Tooltip("Force applied towards the grapple point.")]
-        public float grappleForce = 20f;
-
-        [Tooltip("Distance threshold to consider the player has reached the grapple point.")]
-        public float reachThreshold = 1f;
-
-        // State flags
         private bool _isGrappling;
-        private Vector2 _grapplePoint;
+        private Vector2 _targetPoint;
+        private LineRenderer _lineRenderer;
+        private Rigidbody2D _playerRigidbody;
+        private Camera _camera;
+        private float _originalGravityScale;
+        
+        private Inventory _inventory;
+        private bool _hasGrappled;
 
-        // Cooldown to prevent rapid grappling
-        [Header("Cooldown Settings")]
-        [Tooltip("Cooldown duration in seconds between grapples.")]
-        public float grappleCooldown = 1f;
-        private bool _canGrapple = true;
-
-        // Camera reference
-        private Camera _mainCamera;
-
-        // Coroutine reference
-        private Coroutine _pullCoroutine;
-
-        private void Awake()
+        void Start()
         {
-            toolName = "Grappler";
-
-            // Get components
-            _rb = GetComponent<Rigidbody2D>();
-            _lineRenderer = GetComponent<LineRenderer>();
-
-            if (_rb == null)
+            _inventory = GetComponent<Inventory>();
+            
+            // Get the Rigidbody2D component for physics calculations
+            _playerRigidbody = GetComponent<Rigidbody2D>();
+            if (_playerRigidbody == null)
             {
-                Debug.LogError($"{toolName}: Rigidbody2D component is missing.");
-            }
-
-            if (_lineRenderer == null)
-            {
-                Debug.LogError($"{toolName}: LineRenderer component is missing.");
+                Debug.LogError("Grappler requires a Rigidbody2D component on the player.");
             }
             else
             {
-                // Configure LineRenderer
-                _lineRenderer.positionCount = 2;
+                _originalGravityScale = _playerRigidbody.gravityScale;
+            }
+
+            // Initialize the LineRenderer for the grappling line visualization
+            _lineRenderer = gameObject.GetComponent<LineRenderer>();
+            if (_lineRenderer == null)
+            {
+                Debug.LogError("Grappler requires a LineRenderer component on the player.");
+            }
+            else
+            { 
                 _lineRenderer.enabled = false;
-                _lineRenderer.startWidth = 0.05f;
-                _lineRenderer.endWidth = 0.05f;
-                _lineRenderer.material = new Material(Shader.Find("Sprites/Default"));
-                _lineRenderer.startColor = Color.white;
-                _lineRenderer.endColor = Color.white;
             }
 
-            _mainCamera = Camera.main;
+            _camera = Camera.main;
         }
 
-        private void Start()
-        {
-            _inventory = GetComponent<Inventory>();
-
-            if (_inventory == null)
-            {
-                Debug.LogError($"{toolName}: Inventory component is missing.");
-            }
-        }
-
-        private void Update()
-        {
-            if (_isGrappling)
-            {
-                UpdateGrappleLine();
-                // Distance check handled in coroutine
-            }
-        }
-
-        /// <summary>
-        /// Defines the action when the grappler is used.
-        /// </summary>
         public override void Use()
         {
-            if (!_canGrapple)
+            if (_inventory != null && _playerRigidbody != null)
             {
-                Debug.Log("Grappler is on cooldown.");
-                return;
+                // Activate the grappler
+                ActivateGrappler();
             }
-
-            if (_isGrappling)
+            else
             {
-                // Optionally, cancel grapple if already grappling
-                CancelGrapple();
-                return;
-            }
-
-            // Perform grappling action
-            PerformGrapple();
+                Debug.LogWarning($"{toolName}: Cannot activate Grappler. Inventory or Rigidbody2D is missing.");
+            } 
         }
 
-        /// <summary>
-        /// Initiates the grappling process.
-        /// </summary>
-        private void PerformGrapple()
+        private void ActivateGrappler()
         {
-            // Get mouse position in world space
             Vector2 mouseWorldPos = GetMouseWorldPosition();
-
-            // Check if the mouse is over a valid grapple target
-            RaycastHit2D hit = Physics2D.Raycast(mouseWorldPos, Vector2.zero, 0f, grappleLayers);
+            Vector2 direction = (mouseWorldPos - (Vector2)transform.position).normalized;
+            RaycastHit2D hit = Physics2D.Raycast(transform.position, direction, Mathf.Infinity, grappleLayerMask);
 
             if (hit.collider != null)
             {
-                _grapplePoint = hit.point;
-
-                float distance = Vector2.Distance(_rb.position, _grapplePoint);
-
-                if (distance > maxGrappleDistance)
-                {
-                    Debug.Log("Grapple target is too far.");
-                    return;
-                }
-
-                // Check if the player has grappling tool (if necessary)
-                if (!_inventory.HasTool<Grappler>())
-                {
-                    Debug.LogWarning("No Grappler available in inventory.");
-                    return;
-                }
-
-                // Consume one Grappler from inventory
-                _inventory.ConsumeTool<Grappler>();
-
+                _targetPoint = hit.point;
                 _isGrappling = true;
 
-                // Enable LineRenderer
-                if (_lineRenderer != null)
-                {
-                    _lineRenderer.enabled = true;
-                    UpdateGrappleLine();
-                }
+                // Disable gravity
+                _playerRigidbody.gravityScale = 0;
 
-                Debug.Log($"Grapple initiated towards {_grapplePoint}.");
+                // Enable and set positions for the LineRenderer
+                _lineRenderer.enabled = true;
+                _lineRenderer.SetPosition(0, transform.position);
+                _lineRenderer.SetPosition(1, _targetPoint);
 
-                // Start pulling coroutine
-                _pullCoroutine = StartCoroutine(PullTowardsGrapplePoint());
-
-                // Start cooldown
-                StartCoroutine(GrappleCooldown());
+                Debug.Log($"{toolName} used. Grappling to {hit.collider.name} at {_targetPoint}.");
             }
             else
             {
-                Debug.Log("No valid grapple target found.");
-            }
+                Debug.Log($"{toolName} failed to find a valid grapple point.");
+            } 
         }
 
-        /// <summary>
-        /// Updates the LineRenderer positions.
-        /// </summary>
-        private void UpdateGrappleLine()
+        void FixedUpdate()
         {
-            if (_lineRenderer != null && _isGrappling)
+            UpdateTool();
+        }
+
+        public override void UpdateTool()
+        {
+            if (_isGrappling)
             {
-                _lineRenderer.SetPosition(0, _rb.position);
-                _lineRenderer.SetPosition(1, _grapplePoint);
+                // Calculate direction towards the target point
+                Vector2 direction = (_targetPoint - (Vector2)transform.position).normalized;
+
+                // Set the player's velocity towards the target point
+                _playerRigidbody.velocity = direction * grapplingSpeed;
+
+                // Update the LineRenderer positions
+                _lineRenderer.SetPosition(0, transform.position);
+                _lineRenderer.SetPosition(1, _targetPoint);
+
+                // Check if the player is within the stopping distance
+                if (Vector2.Distance(transform.position, _targetPoint) <= stoppingDistance)
+                {
+                    CancelGrapple();
+                }
             }
         }
 
-        /// <summary>
-        /// Cancels the current grapple.
-        /// </summary>
         private void CancelGrapple()
         {
-            if (_pullCoroutine != null)
-            {
-                StopCoroutine(_pullCoroutine);
-                _pullCoroutine = null;
-            }
-
             _isGrappling = false;
+            _lineRenderer.enabled = false;
 
-            if (_lineRenderer != null)
-            {
-                _lineRenderer.enabled = false;
-            }
+            // Reset gravityScale
+            _playerRigidbody.gravityScale = _originalGravityScale;
 
-            Debug.Log("Grapple canceled.");
+            // Stop the player's movement
+            _playerRigidbody.velocity = Vector2.zero;
+            
+            _hasGrappled = true;
+
+            Debug.Log($"{toolName}  canceled.");
         }
 
-        /// <summary>
-        /// Retrieves the mouse position in world coordinates.
-        /// </summary>
-        /// <returns>Mouse position in world space.</returns>
         private Vector2 GetMouseWorldPosition()
         {
             Vector3 mouseScreenPos = Mouse.current.position.ReadValue();
-            Vector3 mouseWorldPos3D = _mainCamera.ScreenToWorldPoint(mouseScreenPos);
+            Vector3 mouseWorldPos3D = _camera.ScreenToWorldPoint(mouseScreenPos);
             return new Vector2(mouseWorldPos3D.x, mouseWorldPos3D.y);
         }
 
-        /// <summary>
-        /// Manages the cooldown period between grapples.
-        /// </summary>
-        /// <returns>IEnumerator for coroutine.</returns>
-        private IEnumerator GrappleCooldown()
+        public override void OnDeselect()
         {
-            _canGrapple = false;
-            yield return new WaitForSeconds(grappleCooldown);
-            _canGrapple = true;
-        }
-
-        /// <summary>
-        /// Coroutine to pull the player towards the grapple point.
-        /// </summary>
-        /// <returns>IEnumerator for coroutine.</returns>
-        private IEnumerator PullTowardsGrapplePoint()
-        {
-            while (_isGrappling)
-            {
-                Vector2 direction = (_grapplePoint - _rb.position).normalized;
-                _rb.AddForce(direction * (grappleForce * Time.fixedDeltaTime), ForceMode2D.Force);
-
-                float distance = Vector2.Distance(_rb.position, _grapplePoint);
-                if (distance <= reachThreshold)
-                {
-                    Debug.Log("Reached grapple point.");
-                    CancelGrapple();
-                }
-
-                yield return new WaitForFixedUpdate();
-            }
+            base.OnDeselect();
+            CancelGrapple();
         }
     }
 }
